@@ -38,21 +38,28 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+app.get("/api/health", (req: Request, res: Response) => {
+  res.send({
+    errorCode: 0,
+    success: true,
+    message: "success",
+  });
+})
+
 app.post("/api/web/airdrop/status", async (req: Request, res: Response) => {
-  const { publicKey: walletAddress } = req.body;
-  const publicKey = new PublicKey(walletAddress);
-  const rpcURL = process.env.RPC_URL || "";
-  const connection = new Connection(rpcURL);
-  const provider = new AnchorProvider(connection, new Wallet(new Keypair()));
-  const program = new Program(IDL as Airdrop, provider);
-  console.log(publicKey);
-
-  const [userPDA] = PublicKey.findProgramAddressSync(
-    [utils.bytes.utf8.encode("claim-states"), publicKey?.toBuffer()],
-    program.programId
-  );
-
   try {
+    const { publicKey: walletAddress } = req.body;
+    const publicKey = new PublicKey(walletAddress);
+    const rpcURL = process.env.RPC_URL || "";
+    const connection = new Connection(rpcURL);
+    const provider = new AnchorProvider(connection, new Wallet(new Keypair()));
+    const program = new Program(IDL as Airdrop, provider);
+    console.log(publicKey);
+  
+    const [userPDA] = PublicKey.findProgramAddressSync(
+      [utils.bytes.utf8.encode("claim-states"), publicKey?.toBuffer()],
+      program.programId
+    );
     let claimState = await program.account.claimState.fetch(userPDA);
     console.log(claimState.claimed);
     res.send({
