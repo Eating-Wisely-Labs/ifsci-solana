@@ -20,6 +20,14 @@ const app: Express = express();
 const port = process.env.PORT || 8080;
 
 app.use((req, res, next) => {
+  if (req.headers["token"]) {
+    next();
+  } else {
+    next(new AppError(403, "Forbidden"));
+  }
+});
+
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -31,7 +39,6 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.post("/api/web/airdrop/status", async (req: Request, res: Response) => {
-  console.log(req.body);
   const { publicKey: walletAddress } = req.body;
   const publicKey = new PublicKey(walletAddress);
   const rpcURL = process.env.RPC_URL || "";
