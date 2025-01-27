@@ -15,14 +15,19 @@ config({ path: resolve(__dirname, "../.env") });
 
 import express, { Express, Request, Response, NextFunction } from "express";
 import { AppError } from "./utils/AppError";
+import bodyParser from "body-parser";
 
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
+app.use(bodyParser.raw({type: '*/*'}));
+
 app.use((req, res, next) => {
   if (req.headers["token"]) {
-    next();
+    console.log('[body]:', req.body.toString())
+    console.log('[headers]:', req.headers)
     console.log("[auth] token check passed!");
+    next();
   } else {
     res.status(401).send({
       errorCode: 401,
