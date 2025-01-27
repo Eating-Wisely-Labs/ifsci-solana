@@ -23,7 +23,11 @@ app.use((req, res, next) => {
   if (req.headers["token"]) {
     next();
   } else {
-    next(new AppError(403, "Forbidden"));
+    res.status(401).send({
+      errorCode: 401,
+      success: false,
+      message: "Unauthorized",
+    });
   }
 });
 
