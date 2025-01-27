@@ -22,12 +22,15 @@ const port = process.env.PORT || 8080;
 app.use((req, res, next) => {
   if (req.headers["token"]) {
     next();
+    console.log("[auth] token check passed!");
   } else {
     res.status(401).send({
       errorCode: 401,
       success: false,
       message: "Unauthorized",
     });
+    console.log('[req]:', req.method, req.url)
+    console.log("[auth]: token check failed!");
   }
 });
 
@@ -58,14 +61,15 @@ app.post("/api/web/airdrop/status", async (req: Request, res: Response) => {
     const connection = new Connection(rpcURL);
     const provider = new AnchorProvider(connection, new Wallet(new Keypair()));
     const program = new Program(IDL as Airdrop, provider);
-    console.log(publicKey);
+    console.info('[info]', `start check wallet [${publicKey}]`)
   
     const [userPDA] = PublicKey.findProgramAddressSync(
       [utils.bytes.utf8.encode("claim-states"), publicKey?.toBuffer()],
       program.programId
     );
     let claimState = await program.account.claimState.fetch(userPDA);
-    console.log(claimState.claimed);
+    console.info('[info]', `wallet [${publicKey}] claim status is ${claimState.claimed}`)
+
     res.send({
       errorCode: 0,
       success: true,
@@ -75,7 +79,7 @@ app.post("/api/web/airdrop/status", async (req: Request, res: Response) => {
       },
     });
   } catch (error: Error | any) {
-    console.log(error, error.message);
+    console.error('[error]', error.message);
     res.send({
       errorCode: 1,
       success: false,
